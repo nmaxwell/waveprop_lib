@@ -1,17 +1,73 @@
 
+
+
+
 from ctypes import *
 
-#from numpy import *
-import numpy
+
+c_waveprop = cdll.LoadLibrary('/usr/lib/libwaveprop.so.1')
 
 
-c_hdaf = cdll.LoadLibrary('/usr/lib/libhdaf.so.1')
-
-hdaf_data_dir = '/workspace/hdaf_data'
 
 
-c_hdaf.sigma_from_cutoff_frequency.argtyprs = [ c_double, c_int ]
-c_hdaf.sigma_from_cutoff_frequency.restype = c_double
+
+
+#import numpy
+
+
+#c_waveprop = cdll.LoadLibrary('/usr/lib/libhdaf.so.1')
+
+"""
+int method1_init( method1_data *data, int n1, int n2, double dx1, double dx2, double *velocity, double *damping, int expansion_order, int hdaf_order_1, int hdaf_order_2, double hdaf_gamma_1, double hdaf_gamma_2 );
+
+int method1_free( method1_data *data );
+
+int method1_execute( method1_data *data, double t, double *ui, double *vi, double *uf, double *vf );
+"""
+
+
+"""
+class py_method1_data(Structure):
+    _fields_ = [ (n1, c_int),(n2, c_int),(dx1, c_double),(dx2, c_double),  ]
+
+    int n1,n2;
+    double dx1,dx2;
+    
+    double *velocity;
+    double *damping;
+    int expansion_order;
+    
+    double **U;
+    double **V;
+    void *Del2;
+
+
+c_waveprop.method1_init.argtyprs = [ c_double, c_int ]
+
+
+"""
+
+
+
+
+
+
+
+
+
+
+
+
+
+"""
+
+
+
+
+
+
+
+
 
 def freq_to_sigma( f, m ):
     return c_hdaf.sigma_from_cutoff_frequency( c_double(f), c_int(m) )
@@ -97,7 +153,7 @@ def lp_hdaf_kernel( sampling_period, order, cutoff_frequency ):
 
 
 
-
+"""
 
 
 
