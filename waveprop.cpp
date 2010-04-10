@@ -9,7 +9,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define N_FFT_THREADS 3
+#define N_FFT_THREADS 1
 #include <mathlib/math/std_math.h>
 #include <mathlib/math/PDE/laplacian_hdaf.h>
 #include <mathlib/link.cpp>
@@ -25,46 +25,66 @@ using namespace std;
 
 #include <fftw3.h>
 
-int method1_free( method1_data *data )
+int method1_free( void **pdata )
 {
-    if ((*data).velocity != NULL) {
-        free( (*data).velocity );
-        (*data).velocity = 0;
-    }
+    method1_data *data = *((method1_data **)pdata);
     
-    if ((*data).damping != NULL) {
-        free( (*data).damping );
-        (*data).damping = 0;
-    }
-    
-    if ((*data).U != NULL && data->expansion_order>0 ) {
-        ml_free( (*data).U, data->expansion_order+2 );
-        (*data).U = 0;
-    }
-    
-    if ((*data).V != NULL && data->expansion_order>0 ) {
-        ml_free( (*data).V, data->expansion_order+1 );
-        (*data).V = 0;
-    }
-    
-    if ((*data).U != NULL ) {
-        free( (*data).U );
-    }
-    
-    if ((*data).V != NULL ) {
-        free( (*data).V );
-    }
-    
-    if ((*data).Del2 != NULL) {
-        delete (laplacian_2d_hdaf *)((*data).Del2);
-        (*data).Del2 = 0;
+    if (data!=NULL)
+    {
+        if ((*data).velocity != NULL) {
+            free( (*data).velocity );
+            (*data).velocity = 0;
+        }
+        
+        if ((*data).damping != NULL) {
+            free( (*data).damping );
+            (*data).damping = 0;
+        }
+        
+        if ((*data).U != NULL && data->expansion_order>0 ) {
+            ml_free( (*data).U, data->expansion_order+2 );
+            (*data).U = 0;
+        }
+        
+        if ((*data).V != NULL && data->expansion_order>0 ) {
+            ml_free( (*data).V, data->expansion_order+1 );
+            (*data).V = 0;
+        }
+        
+        if ((*data).U != NULL ) {
+            free( (*data).U );
+        }
+        
+        if ((*data).V != NULL ) {
+            free( (*data).V );
+        }
+        
+        if ((*data).Del2 != NULL) {
+            delete (laplacian_2d_hdaf *)((*data).Del2);
+            (*data).Del2 = 0;
+        }
+        
+        free(data);
+        data = 0;
     }
     
     return 0;
 }
 
-int method1_init( method1_data *data, int n1, int n2, double dx1, double dx2, double *velocity, double *damping, int expansion_order, int hdaf_order_1, int hdaf_order_2, double hdaf_gamma_1, double hdaf_gamma_2 )
+int method1_init( void **pdata, int n1, int n2, double dx1, double dx2, double *velocity, double *damping, int expansion_order, int hdaf_order_1, int hdaf_order_2, double hdaf_gamma_1, double hdaf_gamma_2 )
 {
+    method1_free( pdata );
+    
+    if (*((method1_data **)pdata)!=NULL)
+        return 9;
+    
+    *((method1_data **)pdata) = (method1_data *)malloc(sizeof(method1_data));
+    
+    if (*((method1_data **)pdata)==NULL)
+        return 15;
+    
+    method1_data *data = *((method1_data **)pdata);  
+    
     (*data).n1 = n1;
     (*data).n2 = n2;
     (*data).dx1 = dx1;
@@ -75,8 +95,6 @@ int method1_init( method1_data *data, int n1, int n2, double dx1, double dx2, do
     
     if (velocity == NULL) return 1;
     if (damping == NULL) return 1;
-    
-    method1_free( data );
     
     (*data).velocity = ml_alloc<double> ( N*8 );
     (*data).damping = ml_alloc<double> ( N*8 );
@@ -100,9 +118,12 @@ int method1_init( method1_data *data, int n1, int n2, double dx1, double dx2, do
 }
 
 
-int method1_execute( method1_data *data, double t, double *ui, double *vi, double *uf, double *vf )
+int method1_execute( void *pdata, double t, double *ui, double *vi, double *uf, double *vf )
 {
-
+    method1_data *data = (method1_data *)pdata;
+    
+    if (data==NULL) return 10;
+    
     int N= (*data).n1*(*data).n2;
     double **U = (*data).U; 
     double **V = (*data).V;

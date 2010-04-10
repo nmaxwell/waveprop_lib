@@ -1,5 +1,5 @@
 
-
+from types import *
 from ctypes import *
 from ctypes.util import *
 import numpy
@@ -20,25 +20,26 @@ c_waveprop.method1_free.argtyprs = [ c_void_p ]
 
 c_waveprop.method1_execute.argtypes = [ c_void_p, c_double, c_void_p, c_void_p,  c_void_p,  c_void_p, ]
 
-class py_method1_data(Structure):
-    _fields_ = [ ("n1", c_int), ("n2", c_int), ("dx1", c_double), ("dx2", c_double), ("velocity", c_void_p), ("damping", c_void_p), ("exp_order", c_int), ("U", c_void_p), ("V", c_void_p), ("Del2", c_void_p) ]
+#class py_method1_data(Structure):
+#    _fields_ = [ ("n1", c_int), ("n2", c_int), ("dx1", c_double), ("dx2", c_double), ("velocity", c_void_p), ("damping", c_void_p), ("exp_order", c_int), ("U", c_void_p), ("V", c_void_p), ("Del2", c_void_p) ]
 
 
 
 class propagator1:
     
-    def __init__( self ):
+    def __init__(self ):
         self.data = None
     
-    def free():
+    def free(self ):
         if self.data != None:
             try:
-                c_waveprop.method1_free( self.data )
+                c_waveprop.method1_free( by_ref(self.data) )
             except:
                 print "propagator1: free error."
         
+        self.data = None
     
-    def set( a1=0.0, b1=None, a2=0.0, b2=None, n1=None, n2=None, dx1=None, velocity=lambda x,y:1.0, damping=lambda x,y:0.0, expansion_order=5, hdaf_m1=12, hdaf_m2=12, hdaf_gamma1=0.5, hdaf_gamma2=0.5 ):
+    def set( self, a1=0.0, b1=None, a2=0.0, b2=None, n1=None, n2=None, dx1=None, dx2=None, velocity=lambda x,y:1.0, damping=lambda x,y:0.0, expansion_order=5, hdaf_m1=12, hdaf_m2=12, hdaf_gamma1=0.5, hdaf_gamma2=0.5 ):
         
         if b1 != None and b2 != None:
             if n1 != None and n2 != None:
@@ -51,8 +52,8 @@ class propagator1:
         else:
             if dx1 != None and dx2 != None:
                 if n1 != None and n2 != None:
-                    b1 = float(dx1)*n1 + a1
-                    b2 = float(dx2)*n2 + a2
+                    b1 = dx1*n1 + a1
+                    b2 = dx2*n2 + a2
                 else:
                     if b1 != None and b2 != None:
                         n1 = float(b1-a1)/dx1
@@ -97,7 +98,7 @@ class propagator1:
                 while i2<n2:
                     x1 = float(i1)*dx1+a1
                     x2 = float(i2)*dx2+a2
-                    d[i1,i2] = damping(x1,x2)
+                    D[i1,i2] = damping(x1,x2)
                     i2 += 1
                 i1 += 1
             
@@ -117,29 +118,50 @@ class propagator1:
         self.free()
         
         try:
-            self.data = c_void_p()
-            c_waveprop.method1_init( self.data, c_int(n1), c_int(n2) c_double(dx1), c_double(dx2), velocity.ctypes.data_as(c_void_p), damping.ctypes.data_as(c_void_p), c_int(expansion_order), c_int(hdaf_m1), c_int(hdaf_m2), c_double(hdaf_gamma1), c_double(hdaf_gamma2) )
+            self.data = c_void_p(0)
+            err = c_waveprop.method1_init( byref(self.data), c_int(n1), c_int(n2), c_double(dx1), c_double(dx2), velocity.ctypes.data_as(c_void_p), damping.ctypes.data_as(c_void_p), c_int(expansion_order), c_int(hdaf_m1), c_int(hdaf_m2), c_double(hdaf_gamma1), c_double(hdaf_gamma2) )
+            
+            if err != 0 or self.data.value==0:
+                print "propagator1: initialization error: ", err
             
         except:
             print "propagator1: initialization error."
     
     
-    def __call__( time_step, ui, vi, uf, vf ):
+    def __call__( self, time_step, ui, vi, uf, vf ):
         
         try:
-            c_waveprop.method1_execute( self.data, c_double(time_step), ui.ctypes.data_as(c_void_p), vi.ctypes.data_as(c_void_p), uf.ctypes.data_as(c_void_p), vf.ctypes.data_as(c_void_p) )
+            err = c_waveprop.method1_execute( self.data, c_double(time_step), ui.ctypes.data_as(c_void_p), vi.ctypes.data_as(c_void_p), uf.ctypes.data_as(c_void_p), vf.ctypes.data_as(c_void_p) )
+            if err != 0:
+                print "propagator1: propagation error: ", err
         except:
             print "propagator1: propagation error."
     
-    
-    
-    
+
+
 if __name__ == "__main__":
     
     print c_waveprop
     
+    #a1=0.0, b1=None, a2=0.0, b2=None, n1=None, n2=None, dx1=None, velocity=lambda x,y:1.0, damping=lambda x,y:0.0, expansion_order=5, hdaf_m1=12, hdaf_m2=12, hdaf_gamma1=0.5, hdaf_gamma2=0.5
+    
+    P = propagator1()
+    
+    n1 = n2 = 128
+    
+    P.set( dx1=0.1, dx2=0.1, n1=n1, n2=n2, expansion_order=5 )
+    
+    ui = numpy.zeros((n1,n2))
+    vi = numpy.zeros((n1,n2))
+    uf = numpy.zeros((n1,n2))
+    vf = numpy.zeros((n1,n2))
+    
+    P( 0.1, ui,vi, uf,vf )
     
     
+    
+    
+    P.free()
     
     
 
