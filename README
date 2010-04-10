@@ -5,10 +5,10 @@ to compile:
 
 static:
 
-gcc -Wall -c hdaf.cc -o libhdaf.o -O3
-ar cvq libhdaf.a libhdaf.o
-mv libhdaf.a /usr/local/lib/
-rm libhdaf.o
+gcc -Wall -c waveprop.cc -o libwaveprop.o $std_link
+ar cvq libwaveprop.a libwaveprop.o
+mv libwaveprop.a /usr/local/lib/
+rm libwaveprop.o
 
 
 dynamic:

@@ -14,13 +14,28 @@ methods:
         2D, acoustic, regular cartesian grid, non-homogenous velocity, hdaf for laplacian, taylor expansion of acoustic propagator for time, absorbing boundaries.
     
     
-    
+compile fftw as
+
+./configure --enable-sse2 CPPFLAGS=-fPIC CC=icpc
+
+./configure --enable-sse2 CPPFLAGS=-fPIC CC=icpc -enable-threads
+
+./configure CPPFLAGS=-fPIC CC=icpc -enable-signle
+
+compile arprec as
+
+./configure CXXFLAGS="-fPIC -O3"
+
+
 */
+
+
 
 
  #ifdef __cplusplus
  extern "C" {
  #endif
+
 
 
 struct method1_data {
