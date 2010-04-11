@@ -32,12 +32,14 @@ class propagator1:
     
     def free(self ):
         if self.data != None:
-            try:
-                c_waveprop.method1_free( by_ref(self.data) )
-            except:
-                print "propagator1: free error."
-        
-        self.data = None
+            if self.data.value != 0:
+                try:
+                    err = c_waveprop.method1_free( byref(self.data) )
+                    if err != 0 or self.data.value != None:
+                        print "propagator1: free error,", err, "\t", self.data.value
+                except:
+                    print "propagator1: free error, exception."
+    
     
     def set( self, a1=0.0, b1=None, a2=0.0, b2=None, n1=None, n2=None, dx1=None, dx2=None, velocity=lambda x,y:1.0, damping=lambda x,y:0.0, expansion_order=5, hdaf_m1=12, hdaf_m2=12, hdaf_gamma1=0.5, hdaf_gamma2=0.5 ):
         
@@ -125,8 +127,8 @@ class propagator1:
                 print "propagator1: initialization error: ", err
             
         except:
-            print "propagator1: initialization error."
-    
+            print "propagator1: initialization error, exception."
+        
     
     def __call__( self, time_step, ui, vi, uf, vf ):
         
@@ -135,20 +137,23 @@ class propagator1:
             if err != 0:
                 print "propagator1: propagation error: ", err
         except:
-            print "propagator1: propagation error."
+            print "propagator1: propagation error, exception."
     
 
 
 if __name__ == "__main__":
     
-    print c_waveprop
     
-    #a1=0.0, b1=None, a2=0.0, b2=None, n1=None, n2=None, dx1=None, velocity=lambda x,y:1.0, damping=lambda x,y:0.0, expansion_order=5, hdaf_m1=12, hdaf_m2=12, hdaf_gamma1=0.5, hdaf_gamma2=0.5
-    
-    P = propagator1()
+    from enthought.mayavi import mlab
+    from numpy import *
+    print "\n\n"
     
     n1 = n2 = 128
     
+    [X, Y] = mgrid[0:]
+    
+    
+    P = propagator1()
     P.set( dx1=0.1, dx2=0.1, n1=n1, n2=n2, expansion_order=5 )
     
     ui = numpy.zeros((n1,n2))
@@ -157,9 +162,6 @@ if __name__ == "__main__":
     vf = numpy.zeros((n1,n2))
     
     P( 0.1, ui,vi, uf,vf )
-    
-    
-    
     
     P.free()
     

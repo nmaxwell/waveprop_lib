@@ -27,9 +27,9 @@ using namespace std;
 
 int method1_free( void **pdata )
 {
-    method1_data *data = *((method1_data **)pdata);
+    method1_data *&data = *((method1_data **)pdata);
     
-    if (data!=NULL)
+    if ( data != NULL)
     {
         if ((*data).velocity != NULL) {
             free( (*data).velocity );
@@ -70,6 +70,52 @@ int method1_free( void **pdata )
     
     return 0;
 }
+
+
+
+
+/*
+    method1_data *data = *((method1_data **)pdata);
+    
+    if (data!=NULL)
+    {
+        if ((*data).velocity != NULL) {
+            free( (*data).velocity );
+            (*data).velocity = 0;
+        }
+        
+        if ((*data).damping != NULL) {
+            free( (*data).damping );
+            (*data).damping = 0;
+        }
+        
+        if ((*data).U != NULL && data->expansion_order>0 ) {
+            ml_free( (*data).U, data->expansion_order+2 );
+            (*data).U = 0;
+        }
+        
+        if ((*data).V != NULL && data->expansion_order>0 ) {
+            ml_free( (*data).V, data->expansion_order+1 );
+            (*data).V = 0;
+        }
+        
+        if ((*data).U != NULL ) {
+            free( (*data).U );
+        }
+        
+        if ((*data).V != NULL ) {
+            free( (*data).V );
+        }
+        
+        if ((*data).Del2 != NULL) {
+            delete (laplacian_2d_hdaf *)((*data).Del2);
+            (*data).Del2 = 0;
+        }
+        
+        free(data);
+        data = 0;
+    }
+*/
 
 int method1_init( void **pdata, int n1, int n2, double dx1, double dx2, double *velocity, double *damping, int expansion_order, int hdaf_order_1, int hdaf_order_2, double hdaf_gamma_1, double hdaf_gamma_2 )
 {
