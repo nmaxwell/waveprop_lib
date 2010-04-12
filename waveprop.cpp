@@ -9,7 +9,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define N_FFT_THREADS 1
+#define N_FFT_THREADS 3
 #include <mathlib/math/std_math.h>
 #include <mathlib/math/PDE/laplacian_hdaf.h>
 #include <mathlib/link.cpp>

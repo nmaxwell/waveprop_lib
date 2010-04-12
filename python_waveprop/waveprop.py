@@ -180,6 +180,7 @@ class propagator1:
                     print "propagator1: propagation, force, error: ", err
         except:
             print "propagator1: propagation error, exception."
+            quit()
 
 
 
@@ -217,6 +218,8 @@ if __name__ == "__main__" and True:
     
     
     
+    
+    
     def u0(x,y):
         s = norm((x-3.,y))
         a = 0.5
@@ -250,7 +253,7 @@ if __name__ == "__main__" and True:
     P.set( grid, expansion_order=7, velocity=velocity, damping=damping )
     
     final_time = 10.0
-    time_step = 0.05
+    time_step = 0.01
     
     
     u = grid.evaluate( u0 )
@@ -268,13 +271,15 @@ if __name__ == "__main__" and True:
     
         f1 = None
         f2 = None
-        
+        """
         t1 = time_module.clock()
         f1 = grid.evaluate( forcing_term(time) )
         f2 = grid.evaluate( forcing_term(time+time_step) )
         t2 = time_module.clock()
         c_times.append(t2-t1)
         print "\t", numpy.mean(c_times)
+        """
+        
         
         
         t1 = time_module.clock()

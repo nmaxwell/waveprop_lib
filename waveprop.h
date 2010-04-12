@@ -23,15 +23,11 @@ methods:
     
 compile fftw as
 
-./configure --enable-sse2 CPPFLAGS=-fPIC CC=icpc
-
-./configure --enable-sse2 CPPFLAGS=-fPIC CC=icpc -enable-threads
-
-./configure CPPFLAGS=-fPIC CC=icpc -enable-signle
+./configure --enable-sse2 CPPFLAGS=-fPIC CC=g++ -enable-threads
 
 compile arprec as
 
-./configure CXXFLAGS="-fPIC -O3"
+./configure CXXFLAGS="-fPIC -O3" CXX=g++
 
 also pngwriter with fPIC
 
@@ -83,7 +79,7 @@ int method2_init( void **data, int n1, int n2, double dx1, double dx2, double *v
 
 int method2_free( void **data );
 
-int method2_execute( void *data, double t, double *ui, double *vi, double *uf, double *vf, double *forcing_1, double *forcing_1 );
+int method2_execute( void *data, double t, double *ui, double *vi, double *uf, double *vf, double *forcing_1, double *forcing_2 );
 
 
 
