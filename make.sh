@@ -1,7 +1,8 @@
 
 
-icpc -Wall -fPIC -c waveprop.cpp -o libwaveprop.o $std_link
-icpc -shared -Wl,-soname,libwaveprop.so.1 -o libwaveprop.so.1.0  libwaveprop.o  -lpng -lpngwriter -lz -lfreetype -lrt -pthread -lgsl -lgslcblas -larprec  -lfftw3_threads -lfftw3 -lz
+icpc -Wall -fPIC -c waveprop.cpp -o libwaveprop.o  `freetype-config --cflags` -lpng -lpngwriter -lz -lfreetype -lrt -pthread -lgsl -lgslcblas -larprec -lfftw3f_threads -lfftw3_threads -lfftw3 -lfftw3f -I/usr/local/include -L/usr/local/lib -lz
+icpc $std_link -shared -Wl,-soname,libwaveprop.so.1 -o libwaveprop.so.1.0  libwaveprop.o `freetype-config --cflags` -lpng -lpngwriter -lz -lfreetype -lrt -pthread -lgsl -lgslcblas -larprec -lfftw3f_threads -lfftw3_threads -lfftw3 -lfftw3f -I/usr/local/include -L/usr/local/lib -lz
+#icpc -shared -Wl,-soname,libwaveprop.so.1 -o libwaveprop.so.1.0  libwaveprop.o  -lpng -lpngwriter -lz -lfreetype -lrt -pthread -lgsl -lgslcblas -larprec  -lfftw3_threads -lfftw3 -lz -I/usr/include/freetype2 -lpng -lpngwriter
 
 #-lguide -pthread
 

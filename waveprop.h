@@ -11,7 +11,14 @@ documentation:
 methods:
     
     method1:
-        2D, acoustic, regular cartesian grid, non-homogenous velocity, hdaf for laplacian, taylor expansion of acoustic propagator for time, absorbing boundaries.
+        2D, acoustic, regular cartesian grid, non-homogenous velocity, hdaf for laplacian, taylor expansion of acoustic propagator for time, exponential damping.
+    
+    method2:
+        method1 + forcing term with linear approx of integral
+    
+    
+    
+    
     
     
 compile fftw as
@@ -26,6 +33,8 @@ compile arprec as
 
 ./configure CXXFLAGS="-fPIC -O3"
 
+also pngwriter with fPIC
+
 
 */
 
@@ -36,6 +45,13 @@ compile arprec as
  extern "C" {
  #endif
 
+
+
+int render_png_scalar(
+    char *fname, int nx, int ny, double *data, double center, double major_scale,
+    double red_midpoint, double red_leftvalue, double red_midvalue, double red_rightvalue,
+    double green_midpoint, double green_leftvalue, double green_midvalue, double green_rightvalue,
+    double blue_midpoint, double blue_leftvalue, double blue_midvalue, double blue_rightvalue );
 
 
 struct method1_data {
@@ -58,10 +74,16 @@ int method1_init( void **data, int n1, int n2, double dx1, double dx2, double *v
 
 int method1_free( void **data );
 
+int method1_execute_nodamping( void *data, double t, double *ui, double *vi, double *uf, double *vf );
+
 int method1_execute( void *data, double t, double *ui, double *vi, double *uf, double *vf );
 
 
+int method2_init( void **data, int n1, int n2, double dx1, double dx2, double *velocity, double *damping, int expansion_order, int hdaf_order_1, int hdaf_order_2, double hdaf_gamma_1, double hdaf_gamma_2 );
 
+int method2_free( void **data );
+
+int method2_execute( void *data, double t, double *ui, double *vi, double *uf, double *vf, double *forcing_1, double *forcing_1 );
 
 
 
