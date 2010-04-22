@@ -50,6 +50,16 @@ int render_png_scalar(
     double blue_midpoint, double blue_leftvalue, double blue_midvalue, double blue_rightvalue );
 
 
+int render_png_scalar_resample(
+    char *fname, double *data,
+    double a1, double b1, double a2, double b2, int nx, int ny,
+    double a1_new, double b1_new, double a2_new, double b2_new, int nx_new, int ny_new,
+    double center, double major_scale,
+    double red_midpoint, double red_leftvalue, double red_midvalue, double red_rightvalue,
+    double green_midpoint, double green_leftvalue, double green_midvalue, double green_rightvalue,
+    double blue_midpoint, double blue_leftvalue, double blue_midvalue, double blue_rightvalue,
+    double red_default, double green_default, double blue_default );
+
 struct method1_data {
     
     int n1,n2;

@@ -23,7 +23,7 @@ c_waveprop.method2_execute.argtypes = [ c_void_p, c_double, c_void_p, c_void_p, 
 
 c_waveprop.render_png_scalar.argtypes = [ c_char_p, c_int, c_int, c_void_p,  c_double, c_double, c_double, c_double, c_double, c_double, c_double, c_double, c_double, c_double, c_double, c_double, c_double, c_double  ]
 
-
+c_waveprop.render_png_scalar_resample.argtypes = [ c_char_p, c_void_p, c_double, c_double, c_double, c_double, c_int, c_int, c_double, c_double, c_double, c_double, c_int, c_int, c_double, c_double, c_double, c_double, c_double, c_double,  c_double, c_double, c_double, c_double, c_double, c_double, c_double, c_double,  c_double, c_double, c_double ]
 
 
 """
@@ -44,6 +44,15 @@ def write_png( data, fname, major_scale=1.0, center=0., red_params=(0.5, 0.,0.5,
     except:
         print "write_png error, c_waveprop.write_png, exception."
 
+
+def write_png_resample( data, fname, grid_new, grid_old,  major_scale=1.0, center=0., red_params=(0.5, 0.,0.5,1. ), green_params=(0.5, 0.,0.5,1. ), blue_params=(0.5, 0.,0.5,1. ), default_color=(0.0,0.0,0.0) ):
+    
+    nx,ny = numpy.shape(data)
+    
+    try:
+        err = c_waveprop.render_png_scalar_resample( c_char_p(fname), data.ctypes.data_as(c_void_p), grid_old.a1, grid_old.b2, grid_old.a2, grid_old.b2, grid_old.n1, grid_old.n2, grid_new.a1, grid_new.b2, grid_new.a2, grid_new.b2, grid_new.n1, grid_new.n2, center, major_scale, c_double(red_params[0]),c_double(red_params[1]),c_double(red_params[2]),c_double(red_params[3]), c_double(green_params[0]),c_double(green_params[1]),c_double(green_params[2]),c_double(green_params[3]), c_double(blue_params[0]),c_double(blue_params[1]),c_double(blue_params[2]),c_double(blue_params[3]), c_double(default_color[0]), c_double(default_color[1]), c_double(default_color[2]) )
+    except:
+        print "write_png_resample error, c_waveprop.render_png_scalar, exception."
 
 
 class grid2d:
@@ -74,10 +83,14 @@ class grid2d:
         
         self.a1 = float(a1)
         self.a2 = float(a2)
+        self.b1 = float(n1*dx1+a1)
+        self.b2 = float(n2*dx2+a2)
         self.n1 = int(n1)
         self.n2 = int(n2)
         self.dx1 = float(dx1)
         self.dx2 = float(dx2)
+        
+        [self.X1, self.X2] = self.coord_mesh()
     
     def coord_mesh(self ):
         return numpy.mgrid[ self.a1: self.a1+self.n1*self.dx1: self.dx1, self.a2: self.a2+self.n2*self.dx2: self.dx2 ]
@@ -85,23 +98,25 @@ class grid2d:
     def zeros(self ):
         return numpy.zeros((self.n1,self.n2))
     
+    def ones(self ):
+        return numpy.ones((self.n1,self.n2))
+    
     def evaluate(self, f):
-        F = self.zeros()
-        i1=0
-        while i1<self.n1:
-            i2=0
-            while i2<self.n2:
-                x1 = self.dx1*i1+self.a1
-                x2 = self.dx2*i2+self.a2
-                F[i1,i2] = f(x1,x2)
-                i2 += 1
-            i1 += 1
-        return F
+        g = numpy.vectorize(f)
+        try:
+            return g(self.X1, self.X2)
+        except:
+            print "grid2d error: evaluate"
+            return self.zeros()
     
     def shape(self ):
         return (self.n1, self.n2 )
-
-
+    
+    def index1(self, x ):
+        return int((x-self.a1)/self.dx1)
+    
+    def index2(self, y ):
+        return int((y-self.a2)/self.dx2)
 
 
 
@@ -268,17 +283,15 @@ if __name__ == "__main__" and True:
     c_times = []
     
     while time<final_time:
-    
-        f1 = None
-        f2 = None
-        """
+        
         t1 = time_module.clock()
-        f1 = grid.evaluate( forcing_term(time) )
-        f2 = grid.evaluate( forcing_term(time+time_step) )
+        
+        f1 = grid.evaluate( lambda x,y: 3.0*exp(-x*x-y*y)*cos(2.*pi*time/2) ) #forcing_term(time)
+        f2 = grid.evaluate( lambda x,y: 3.0*exp(-x*x-y*y)*cos(2.*pi*(time+time_step)/2) ) #forcing_term(time+time_step) 
+        
         t2 = time_module.clock()
         c_times.append(t2-t1)
         print "\t", numpy.mean(c_times)
-        """
         
         
         

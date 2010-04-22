@@ -9,7 +9,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define N_FFT_THREADS 3
+#define N_FFT_THREADS 1
 #include <mathlib/math/std_math.h>
 #include <mathlib/math/PDE/laplacian_hdaf.h>
 #include <mathlib/link.cpp>
@@ -72,6 +72,58 @@ int render_png_scalar(
     return 0;
 }
 
+
+int render_png_scalar_resample(
+    char *fname, double *data,
+    double a1, double b1, double a2, double b2, int nx, int ny,
+    double a1_new, double b1_new, double a2_new, double b2_new, int nx_new, int ny_new,
+    double center, double major_scale,
+    double red_midpoint, double red_leftvalue, double red_midvalue, double red_rightvalue,
+    double green_midpoint, double green_leftvalue, double green_midvalue, double green_rightvalue,
+    double blue_midpoint, double blue_leftvalue, double blue_midvalue, double blue_rightvalue,
+    double red_default, double green_default, double blue_default )
+{
+    //cout << "writing " << fname << endl;
+    
+	pngwriter png(nx_new, ny_new, 1.0, fname);
+    
+ 	for (int i = 0; i<nx_new;i++)
+ 	for (int j = 0; j<ny_new;j++)
+    {
+        double x = (b1_new-a1_new)*((double)i)/nx_new + a1_new;
+        double y = (b2_new-a2_new)*((double)j)/ny_new + a2_new;
+        double red=red_default,green=green_default,blue=blue_default;
+        
+        {
+            int i_sample = int(((x-a1)/(b1-a1))*nx);
+            int j_sample = int(((y-a2)/(b2-a2))*ny);
+            
+            if ( 0<=i_sample and i_sample < nx and 0<=j_sample and j_sample < ny )
+            {
+                double s = atan((data[i_sample*ny+j_sample]-center)/major_scale)/ml_pi+0.5;
+                
+                if ( s <= red_midpoint )
+                        red = (s/red_midpoint)*(red_midvalue-red_leftvalue)+red_leftvalue;
+                    else
+                        red = (s-red_midpoint)*(red_rightvalue-red_midvalue)/(1.0-red_midpoint)+red_midvalue;
+                if ( s <= green_midpoint )
+                        green = (s/green_midpoint)*(green_midvalue-green_leftvalue)+green_leftvalue;
+                    else
+                        green = (s-green_midpoint)*(green_rightvalue-green_midvalue)/(1.0-green_midpoint)+green_midvalue;
+                if ( s <= blue_midpoint )
+                        blue = (s/blue_midpoint)*(blue_midvalue-blue_leftvalue)+blue_leftvalue;
+                    else
+                        blue = (s-blue_midpoint)*(blue_rightvalue-blue_midvalue)/(1.0-blue_midpoint)+blue_midvalue;
+            }
+        }
+        
+        png.plot(i+1,j+1, red, green, blue );
+	}
+    
+	png.close();
+    
+    return 0;
+}
 
 
 int method1_free( void **pdata )
