@@ -42,9 +42,11 @@ also pngwriter with fPIC
  #endif
 
 
+// ordering: 0 if row major, 1 if column major
 
 int render_png_scalar(
-    char *fname, int nx, int ny, double *data, double center, double major_scale,
+    char *fname, int nx, int ny, double *data, int ordering,
+    double center, double major_scale,
     double red_midpoint, double red_leftvalue, double red_midvalue, double red_rightvalue,
     double green_midpoint, double green_leftvalue, double green_midvalue, double green_rightvalue,
     double blue_midpoint, double blue_leftvalue, double blue_midvalue, double blue_rightvalue );

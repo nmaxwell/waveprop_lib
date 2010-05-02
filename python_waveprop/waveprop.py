@@ -21,7 +21,7 @@ c_waveprop.method2_free.argtyprs = [ c_void_p ]
 c_waveprop.method2_execute.argtypes = [ c_void_p, c_double, c_void_p, c_void_p,  c_void_p,  c_void_p, c_void_p,  c_void_p ]
 
 
-c_waveprop.render_png_scalar.argtypes = [ c_char_p, c_int, c_int, c_void_p,  c_double, c_double, c_double, c_double, c_double, c_double, c_double, c_double, c_double, c_double, c_double, c_double, c_double, c_double  ]
+c_waveprop.render_png_scalar.argtypes = [ c_char_p, c_int, c_int, c_void_p, c_int,  c_double, c_double, c_double, c_double, c_double, c_double, c_double, c_double, c_double, c_double, c_double, c_double, c_double, c_double  ]
 
 c_waveprop.render_png_scalar_resample.argtypes = [ c_char_p, c_void_p, c_double, c_double, c_double, c_double, c_int, c_int, c_double, c_double, c_double, c_double, c_int, c_int, c_double, c_double, c_double, c_double, c_double, c_double,  c_double, c_double, c_double, c_double, c_double, c_double, c_double, c_double,  c_double, c_double, c_double ]
 
@@ -35,12 +35,40 @@ int render_png_scalar(
 """
 
 
-def write_png( data, fname, major_scale=1.0, center=0., red_params=(0.5, 0.,0.5,1. ), green_params=(0.5, 0.,0.5,1. ), blue_params=(0.5, 0.,0.5,1. ) ):
+
+
+def hard_copy(ip):
+    nx, ny = numpy.shape(ip)
+    op = numpy.zeros((nx,ny))
+    for i in range(nx):
+        for j in range(ny):
+            op[i][j] = ip[i][j]
+    return op
+
+
+def rotate_array(ip):
+    nx, ny = numpy.shape(ip)
+    op = numpy.zeros((ny,nx))
+    for i in range(nx):
+        for j in range(ny):
+            op[j][nx-i-1] = ip[i][j]
+    return op
+
+
+
+
+
+
+
+def write_png( data, fname, major_scale=1.0, center=0., red_params=(0.5, 0.,0.5,1. ), green_params=(0.5, 0.,0.5,1. ), blue_params=(0.5, 0.,0.5,1. ), ordering='rm' ):
     
     nx,ny = numpy.shape(data)
+    ordering_int = 0
+    if ordering not in [ 'rm', 'row_major', 'row' ]:
+        ordering_int = 1
     
     try:
-        err = c_waveprop.render_png_scalar( c_char_p(fname), c_int(nx), c_int(ny), data.ctypes.data_as(c_void_p), center, major_scale, c_double(red_params[0]),c_double(red_params[1]),c_double(red_params[2]),c_double(red_params[3]), c_double(green_params[0]),c_double(green_params[1]),c_double(green_params[2]),c_double(green_params[3]), c_double(blue_params[0]),c_double(blue_params[1]),c_double(blue_params[2]),c_double(blue_params[3]) )
+        err = c_waveprop.render_png_scalar( c_char_p(fname), c_int(nx), c_int(ny), data.ctypes.data_as(c_void_p), c_int(ordering_int), center, major_scale, c_double(red_params[0]),c_double(red_params[1]),c_double(red_params[2]),c_double(red_params[3]), c_double(green_params[0]),c_double(green_params[1]),c_double(green_params[2]),c_double(green_params[3]), c_double(blue_params[0]),c_double(blue_params[1]),c_double(blue_params[2]),c_double(blue_params[3]) )
     except:
         print "write_png error, c_waveprop.write_png, exception."
 
@@ -126,6 +154,9 @@ class propagator1:
         self.data = None
         self.grid = None
     
+    def __del__(self ):
+        self.free()
+    
     def free(self ):
         if self.data != None:
             if self.data.value != 0:
@@ -186,6 +217,7 @@ class propagator1:
         
         try:
             if initial_force is None and final_force is None:
+                #print ui.ctypes.data_as(c_void_p), vi.ctypes.data_as(c_void_p), uf.ctypes.data_as(c_void_p), vf.ctypes.data_as(c_void_p)
                 err = c_waveprop.method1_execute( self.data, c_double(time_step), ui.ctypes.data_as(c_void_p), vi.ctypes.data_as(c_void_p), uf.ctypes.data_as(c_void_p), vf.ctypes.data_as(c_void_p) )
                 if err != 0:
                     print "propagator1: propagation error: ", err
@@ -202,6 +234,8 @@ class propagator1:
 
 
 if __name__ == "__main__" and True:
+    
+    
     
     
     #from enthought.mayavi import mlab

@@ -39,15 +39,14 @@ int main()
     for (int k=0; k<n1*n2; k++)
         v[k] = 1.0;
     
-    method1_data data;
+    void *data=0;
     method1_init( &data, n1, n2, dx1, dx2, vel, damp, exp_order, hdaf_order, hdaf_order, hdaf_gamma, hdaf_gamma );
     
     double t = 0.0;
     
-    
     while (t <= tf)
     {
-        method1_execute( &data, dt, u,v,u,v );
+        method1_execute( data, dt, u,v,u,v );
         
         t += dt;
     }

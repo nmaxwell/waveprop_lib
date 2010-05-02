@@ -32,10 +32,11 @@ using namespace std;
 #define _debug_here( pos ) ( printf( "debug: file %s; \n line %d; \t code %d\n", __FILE__ , __LINE__, pos ) );
 
 
-
+// ordering: 0 if row major, 1 if column major
 
 int render_png_scalar(
-    char *fname, int nx, int ny, double *data, double center, double major_scale,
+    char *fname, int nx, int ny, double *data, int ordering,
+    double center, double major_scale,
     double red_midpoint, double red_leftvalue, double red_midvalue, double red_rightvalue,
     double green_midpoint, double green_leftvalue, double green_midvalue, double green_rightvalue,
     double blue_midpoint, double blue_leftvalue, double blue_midvalue, double blue_rightvalue )
@@ -47,7 +48,12 @@ int render_png_scalar(
  	for (int i = 0; i<nx;i++)
  	for (int j = 0; j<ny;j++)
     {
-        double r = (data[i*ny+j]-center)/major_scale;
+        double r=0;
+        if (ordering==0)
+            r = (data[i*ny+j]-center)/major_scale;
+        else
+            r = (data[j*nx+i]-center)/major_scale;
+        
         double s = atan(r)/ml_pi+0.5;
         double red,green,blue;
         
